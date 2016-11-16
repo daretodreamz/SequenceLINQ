@@ -18,7 +18,7 @@ namespace SequenceLINQ
 
             double totalVelocity = velocities.Sum(tuple => tuple.Item2);
 
-            // Area assigned to each painter will be in proportion to that painter's velocity compare to the total volocity of the entire group
+            // Area assigned to each painter will be in proportion to that painter's velocity compare to the total velocity of the entire group
             IEnumerable<PaintingTask<ProportionalPainter>> schedule =
                 velocities
                 .Select(tuple =>
