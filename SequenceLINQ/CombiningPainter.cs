@@ -1,0 +1,39 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SequenceLINQ
+{   
+    class CombiningPainter<TPainter> : CompositePainter<TPainter>
+        where TPainter : IPainter
+    {
+        private IPaintingScheduler<TPainter> ScheduleWork { get; }
+
+        public CombiningPainter(IEnumerable<TPainter> painters, 
+            IPaintingScheduler<TPainter> scheduler) 
+            : base(painters)
+        {
+            base.Reduce = this.Combine;
+            this.ScheduleWork = scheduler;
+        }
+
+        private IPainter Combine(double sqMeters, IEnumerable<TPainter> painters)
+        {
+            IEnumerable<TPainter> availablePainters = painters.Where(painter => painter.IsAvailable);
+
+            IEnumerable<PaintingTask<TPainter>> schedule = this.ScheduleWork.Schedule(sqMeters, availablePainters);
+
+            TimeSpan time = schedule.Max(task => task.Painter.EstimateTimeToPaint(task.SquareMeters));
+
+            double cost = schedule.Sum(task => task.Painter.EstimateCompensation(task.SquareMeters));
+            
+            return new ProportionalPainter()
+            {
+                TimePerSqMeter = TimeSpan.FromHours(time.TotalHours / sqMeters),
+                DollarsPerHour = cost / time.TotalHours
+            };
+        }              
+    }
+}
